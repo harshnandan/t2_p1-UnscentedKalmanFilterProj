@@ -14,11 +14,17 @@ PROJECT PASSING CRITERIA
 There are several criteria that must be fulfilled to pass the project.
 
 - The overall processing chain (prediction, laser update or radar update depending on measurement type) must be correct.
+-- Done
 - The student is not allowed to use values from the future to reason about the current state.
+-- Agreed
 - It must be possible to run the project in three different modes: considering laser only, with considering radar only, or with using both sensors.
+-- User can assign appropriate value to 'use_laser_' and 'use_radar_' to toggle sensors on/off.
 - For every mode, the overall RMSE (2d position only) may not be more than 10% increased to what the original solution is able to reach (this number depends on the individual measurement sequence)
+-- Done
 - The RMSE of laser AND radar must be lower than radar only or laser only
+-- Done
 - The NIS of radar measurements must be between 0.35 and 7.81 in at least 80% of all radar update steps.
+-- 87% of the data is within the specified limit.
 
 
 PROJECT GRADING

@@ -65,6 +65,8 @@ UKF::UKF() {
 			  0, std_radphi_*std_radphi_,0,
 			  0, 0, std_radrd_*std_radrd_;
 
+  NIS_ = 0;
+
 }
 
 UKF::~UKF() {}
@@ -109,9 +111,13 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
    Prediction(dt);
    if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
-	   UpdateRadar(meas_package);
+	   if(use_radar_==true){
+		   UpdateRadar(meas_package);
+	   }
    }else{
-	   UpdateLidar(meas_package);
+	   if(use_laser_==true){
+		   UpdateLidar(meas_package);
+	   }
    }
 
 }
@@ -270,6 +276,10 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 	  x_ = x_ + (K * y);
 	  MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
 	  P_ = (I - K * H) * P_;
+
+	  // NIS
+	  NIS_ = y.transpose() * S.inverse() * y;
+	  cout << NIS_ << "\n";
 }
 
 /**
@@ -285,7 +295,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
-	cout << "\n\nstart of radar update\n";
 	int n_z = 3;
 	MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
 	VectorXd z_pred = VectorXd(3);
@@ -340,17 +349,12 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
 	    // state difference
 	    VectorXd x_diff = Xsig_pred_.col(i) - x_;
-		cout << x_diff << "\n\n";
 	    //angle normalization
 		  while (x_diff(3)> M_PI) {
 			  x_diff(3)-=2.*M_PI;
-			  cout << "reducing ---- ";
-			  cout << "x_diff(3): " << x_diff(3)/M_PI*180 << "\n";
 		  }
 		  while (x_diff(3)<-M_PI) {
 			  x_diff(3)+=2.*M_PI;
-			  cout << "increasing ++++ ";
-			  cout << "x_diff(3): " << x_diff(3)/M_PI*180 << "\n";
 		  }
 	    //while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
 	    //while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
@@ -358,7 +362,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 	    Tc = Tc + wi(i) * x_diff * z_diff.transpose();
 	  }
 
-	cout << "Tc Prediction done\n";
 	  //Kalman gain K;
 	  MatrixXd K = Tc * S.inverse();
 
@@ -382,6 +385,9 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 	  //update state mean and covariance matrix
 	  x_ = x_ + K * y;
 	  P_ = P_ - K*S*K.transpose();
-	  cout << "end of radar update\n";
+
+	  // NIS
+	  NIS_ = y.transpose() * S.inverse() * y;
+	  cout << NIS_ << "\n";
 }
 

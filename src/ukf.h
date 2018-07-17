@@ -72,6 +72,8 @@ public:
   MatrixXd R_lidar_;
 
   MatrixXd R_radar_;
+
+  double NIS_;
   /**
    * Constructor
    */
